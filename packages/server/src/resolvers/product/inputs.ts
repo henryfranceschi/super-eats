@@ -1,6 +1,17 @@
 import { Length, MaxLength } from "class-validator";
-import { ArgsType, Field, Float, InputType, Int } from "type-graphql";
+import { ArgsType, Field, Float, InputType, Int, registerEnumType } from "type-graphql";
 import Product, { Categories, Diets } from "../../entity/Product";
+
+enum ProductOrder {
+    Popularity,
+    Rating,
+    Price
+}
+
+registerEnumType(ProductOrder, {
+    name: 'ProductOrder',
+    description: ''
+})
 
 @InputType()
 class CreateProductInput implements Partial<Product> {
@@ -44,4 +55,4 @@ class ProductsArgs {
 
 }
 
-export { CreateProductInput, ProductsArgs };
+export { CreateProductInput, ProductsArgs, ProductOrder };
