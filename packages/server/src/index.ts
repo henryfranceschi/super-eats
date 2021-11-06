@@ -5,7 +5,6 @@ import Redis from "ioredis";
 import connectRedis from 'connect-redis';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from "typeorm";
-import cors from "cors";
 import session, { SessionOptions } from 'express-session';
 import { ProductResolver, RestaurantResolver, UserResolver, ReviewResolver } from './resolvers';
 
@@ -36,7 +35,6 @@ async function main() {
         }
     };
 
-    app.use(cors(corsOptions));
     app.use(session(sessionOptions));
 
     const schema = await buildSchema({
@@ -49,7 +47,7 @@ async function main() {
     });
     await apolloServer.start();
 
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: corsOptions });
 
     app.listen(4000, () => console.log('listening on port 4000'));
 }
