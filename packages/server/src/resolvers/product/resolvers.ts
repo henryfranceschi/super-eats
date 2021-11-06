@@ -6,25 +6,13 @@ import {
     Int,
     Mutation,
     Query,
-    registerEnumType,
     Resolver,
     ResolverInterface,
     Root
 } from "type-graphql";
 import Product, { Review } from "../../entity/Product";
-import { CreateProductInput } from "./inputs";
+import { CreateProductInput, ProductOrder } from "./inputs";
 import { PaginationArgs, Order } from '../inputs';
-
-enum ProductOrder {
-    Popularity,
-    Rating,
-    Price
-}
-
-registerEnumType(ProductOrder, {
-    name: 'ProductOrder',
-    description: ''
-})
 
 @Resolver(Product)
 class ProductResolver implements ResolverInterface<Product> {
