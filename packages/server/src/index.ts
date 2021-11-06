@@ -6,7 +6,7 @@ import connectRedis from 'connect-redis';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from "typeorm";
 import cors from "cors";
-import session from 'express-session';
+import session, { SessionOptions } from 'express-session';
 import { ProductResolver, RestaurantResolver, UserResolver, ReviewResolver } from './resolvers';
 
 async function main() {
@@ -17,25 +17,22 @@ async function main() {
 
     const corsOptions = {
         credentials: true,
-        origin: [
-            "http://localhost:3000",
-            "https://studio.apollographql.com"
-        ]
+        origin: "http://localhost:3000"
     };
 
-    const sessionOptions = {
+    const sessionOptions: SessionOptions = {
         store: new RedisStore({
             client: redis,
         }),
         name: "sid",
-        secret: '8989dbbb7dfd3906b2ba480a5ec9e3927e47572a7908f29f75aa14b9d60d14557f97f4ea202e4f62d8eebfc63e96a562a51f844832b2aeeeedf28a98f168b88a',
+        secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            sameSite: true,
-            secure: process.env.NODE_ENV  === 'production',
-            maxAge: 30 * 60 * 1000 // 30 minutes
+            sameSite: 'none',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 30 * 60 * 1000
         }
     };
 
@@ -43,17 +40,16 @@ async function main() {
     app.use(session(sessionOptions));
 
     const schema = await buildSchema({
-        resolvers: [UserResolver,  RestaurantResolver, ProductResolver, ReviewResolver]
+        resolvers: [UserResolver, RestaurantResolver, ProductResolver, ReviewResolver]
     });
 
     const apolloServer = new ApolloServer({
         schema,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        context: ({req}: any) => ({req})
+        context: ({ req }: { req: express.Request }) => ({ req })
     });
     await apolloServer.start();
 
-    apolloServer.applyMiddleware({app});
+    apolloServer.applyMiddleware({ app });
 
     app.listen(4000, () => console.log('listening on port 4000'));
 }
