@@ -1,5 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { Field, ID, ObjectType } from 'type-graphql'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Field, ID, ObjectType } from 'type-graphql';
 
 enum UserRole {
     User = 'user',
@@ -9,7 +9,7 @@ enum UserRole {
 
 @ObjectType()
 @Entity()
-class User extends BaseEntity {
+class User {
 
     @Field(() => ID)
     @PrimaryGeneratedColumn()

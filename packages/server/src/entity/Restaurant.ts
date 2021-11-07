@@ -1,5 +1,4 @@
 import {
-    BaseEntity,
     Column,
     Entity,
     JoinColumn,
@@ -13,7 +12,7 @@ import { User } from './User';
 
 @ObjectType()
 @Entity()
-class Restaurant extends BaseEntity {
+class Restaurant {
 
     @Field(() => ID)
     @PrimaryGeneratedColumn()
