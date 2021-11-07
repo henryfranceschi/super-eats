@@ -1,6 +1,6 @@
 import { IsEmail, Length, MaxLength } from "class-validator";
-import { Field, InputType } from "type-graphql";
-import { User } from '../../entity/User';
+import { Field, InputType, registerEnumType } from "type-graphql";
+import { User, UserRole } from '../../entity/User';
 
 @InputType()
 class CreateUserInput implements Partial<User> {
@@ -32,5 +32,10 @@ class LoginInput implements Partial<User> {
     password: string;
 
 }
+
+registerEnumType(UserRole, {
+    name: 'UserRole',
+    description: ''
+})
 
 export { CreateUserInput, LoginInput }

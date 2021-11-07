@@ -1,7 +1,7 @@
 import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './User';
 import Restaurant from './Restaurant';
-import { Field, Float, ID, Int, ObjectType, registerEnumType } from 'type-graphql';
+import { Field, Float, ID, Int, ObjectType } from 'type-graphql';
 
 enum Diets {
     None,
@@ -9,11 +9,6 @@ enum Diets {
     Vegan,
     Halal,
 }
-
-registerEnumType(Diets, {
-    name: 'Diets',
-    description: ''
-})
 
 enum Categories {
     None,
@@ -27,11 +22,6 @@ enum Categories {
     Japanese,
     Vietnamese,
 }
-
-registerEnumType(Categories, {
-    name: 'Categories',
-    description: ''
-})
 
 @ObjectType()
 @Entity()

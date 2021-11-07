@@ -8,11 +8,6 @@ enum ProductOrder {
     Price
 }
 
-registerEnumType(ProductOrder, {
-    name: 'ProductOrder',
-    description: ''
-})
-
 @InputType()
 class CreateProductInput implements Partial<Product> {
 
@@ -54,5 +49,20 @@ class ProductsArgs {
     maxRating?: number;
 
 }
+
+registerEnumType(Diets, {
+    name: 'Diets',
+    description: ''
+})
+
+registerEnumType(Categories, {
+    name: 'Categories',
+    description: ''
+})
+
+registerEnumType(ProductOrder, {
+    name: 'ProductOrder',
+    description: ''
+})
 
 export { CreateProductInput, ProductsArgs, ProductOrder };
