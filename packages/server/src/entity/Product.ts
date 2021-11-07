@@ -1,4 +1,10 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn
+} from 'typeorm';
 import { User } from './User';
 import Restaurant from './Restaurant';
 import { Field, Float, ID, Int, ObjectType } from 'type-graphql';
@@ -25,7 +31,7 @@ enum Categories {
 
 @ObjectType()
 @Entity()
-class Product extends BaseEntity {
+class Product {
 
     @Field(() => ID)
     @PrimaryGeneratedColumn()
@@ -74,7 +80,7 @@ class Product extends BaseEntity {
 
 @ObjectType()
 @Entity()
-class Review extends BaseEntity {
+class Review {
 
     @Field(() => ID)
     @PrimaryGeneratedColumn()
