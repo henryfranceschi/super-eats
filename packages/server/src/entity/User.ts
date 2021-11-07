@@ -1,16 +1,11 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { Field, ID, ObjectType, registerEnumType } from 'type-graphql'
+import { Field, ID, ObjectType } from 'type-graphql'
 
 enum UserRole {
     User = 'user',
     Seller = 'seller',
     Admin = 'admin',
 }
-
-registerEnumType(UserRole, {
-    name: 'UserRole',
-    description: ''
-})
 
 @ObjectType()
 @Entity()
