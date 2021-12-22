@@ -8,8 +8,7 @@
     "experimentalDecorators": true,
     // Modules
     "module": "commonjs",
-    "rootDir": "src",
-    "typeRoots": ["src/@types"],
+    "typeRoots": ["@types"],
     // Emit
     "outDir": "dist",
   }
