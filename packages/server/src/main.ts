@@ -1,29 +1,38 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 import { ApolloServer } from 'apollo-server-express';
-import express from "express";
-import Redis from "ioredis";
-import connectRedis from 'connect-redis';
-import { buildSchema } from 'type-graphql';
-import { createConnection } from "typeorm";
+import express from 'express';
 import session, { SessionOptions } from 'express-session';
-import { ProductResolver, RestaurantResolver, UserResolver, ReviewResolver } from './resolvers';
+import cors from 'cors';
+import Redis from 'ioredis';
+import connectRedis from 'connect-redis';
+import { createConnection, useContainer } from 'typeorm';
+import { Container } from 'typeorm-typedi-extensions';
+import { buildSchema } from 'type-graphql';
+import {
+    ProductResolver,
+    RestaurantResolver,
+    UserResolver,
+    ReviewResolver,
+} from './resolvers';
 
 async function main() {
+    useContainer(Container);
     await createConnection();
+
     const redis = new Redis();
     const RedisStore = connectRedis(session);
     const app = express();
 
     const corsOptions = {
         credentials: true,
-        origin: "http://localhost:3000"
+        origin: ['http://localhost:3000', 'https://studio.apollographql.com'],
     };
 
     const sessionOptions: SessionOptions = {
         store: new RedisStore({
             client: redis,
         }),
-        name: "sid",
+        name: 'sid',
         secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
@@ -31,23 +40,29 @@ async function main() {
             httpOnly: true,
             sameSite: 'none',
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 30 * 60 * 1000
-        }
+            maxAge: 30 * 60 * 1000,
+        },
     };
-
+    app.use(cors(corsOptions));
     app.use(session(sessionOptions));
 
     const schema = await buildSchema({
-        resolvers: [UserResolver, RestaurantResolver, ProductResolver, ReviewResolver]
+        resolvers: [
+            UserResolver,
+            RestaurantResolver,
+            ProductResolver,
+            ReviewResolver,
+        ],
+        container: Container,
     });
 
     const apolloServer = new ApolloServer({
         schema,
-        context: ({ req }: { req: express.Request }) => ({ req })
+        context: ({ req }: { req: express.Request }) => ({ req }),
     });
     await apolloServer.start();
 
-    apolloServer.applyMiddleware({ app, cors: corsOptions });
+    apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(4000, () => console.log('listening on port 4000'));
 }
