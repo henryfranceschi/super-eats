@@ -3,11 +3,11 @@ import {
     Entity,
     ManyToOne,
     OneToMany,
-    PrimaryGeneratedColumn
 } from 'typeorm';
 import { User } from './User';
 import Restaurant from './Restaurant';
-import { Field, Float, ID, Int, ObjectType } from 'type-graphql';
+import { Field, Float, Int, ObjectType } from 'type-graphql';
+import { Resource } from './Resource';
 
 enum Diets {
     None,
@@ -31,11 +31,7 @@ enum Categories {
 
 @ObjectType()
 @Entity()
-class Product {
-
-    @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
+class Product extends Resource {
 
     @Field()
     @Column({ length: 32 })
@@ -66,7 +62,9 @@ class Product {
     diet: Diets;
 
     @Field(() => Restaurant)
-    @ManyToOne(() => Restaurant, restaurant => restaurant.products)
+    @ManyToOne(() => Restaurant, restaurant => restaurant.products, {
+        nullable: false
+    })
     seller: Restaurant;
 
     @Field(() => [Review])
@@ -80,11 +78,7 @@ class Product {
 
 @ObjectType()
 @Entity()
-class Review {
-
-    @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
+class Review extends Resource {
 
     @Field(() => Int)
     @Column()

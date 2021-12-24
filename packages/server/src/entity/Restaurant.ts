@@ -4,19 +4,15 @@ import {
     JoinColumn,
     OneToMany,
     OneToOne,
-    PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Field, ID, Int, ObjectType } from 'type-graphql';
+import { Field, Int, ObjectType } from 'type-graphql';
 import Product from './Product';
 import { User } from './User';
+import { Resource } from './Resource';
 
 @ObjectType()
 @Entity()
-class Restaurant {
-
-    @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
+class Restaurant extends Resource {
 
     @Field()
     @Column({ length: 32 })
