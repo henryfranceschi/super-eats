@@ -1,16 +1,22 @@
-import { Length, MaxLength } from "class-validator";
-import { ArgsType, Field, Float, InputType, Int, registerEnumType } from "type-graphql";
-import Product, { Categories, Diets } from "../../entity/Product";
+import { IsPositive, Length, MaxLength } from 'class-validator';
+import {
+    ArgsType,
+    Field,
+    Float,
+    InputType,
+    Int,
+    registerEnumType,
+} from 'type-graphql';
+import Product, { Categories, Diets } from '../../entity/Product';
 
 enum ProductOrder {
     Popularity,
     Rating,
-    Price
+    Price,
 }
 
 @InputType()
 class CreateProductInput implements Partial<Product> {
-
     @Field()
     @Length(2, 32)
     name: string;
@@ -20,6 +26,7 @@ class CreateProductInput implements Partial<Product> {
     description?: string;
 
     @Field(() => Float)
+    @IsPositive()
     price: number;
 
     @Field(() => Categories)
@@ -27,15 +34,10 @@ class CreateProductInput implements Partial<Product> {
 
     @Field(() => Diets, { nullable: true })
     diet?: Diets;
-
-    @Field(() => Int)
-    sellerID: number;
-
 }
 
 @ArgsType()
 class ProductsArgs {
-
     @Field(() => Float, { nullable: true })
     minPrice?: number;
 
@@ -47,22 +49,21 @@ class ProductsArgs {
 
     @Field(() => Float, { nullable: true })
     maxRating?: number;
-
 }
 
 registerEnumType(Diets, {
     name: 'Diets',
-    description: ''
-})
+    description: '',
+});
 
 registerEnumType(Categories, {
     name: 'Categories',
-    description: ''
-})
+    description: '',
+});
 
 registerEnumType(ProductOrder, {
     name: 'ProductOrder',
-    description: ''
-})
+    description: '',
+});
 
 export { CreateProductInput, ProductsArgs, ProductOrder };
