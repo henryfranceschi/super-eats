@@ -2,50 +2,59 @@ import {
     Arg,
     Ctx,
     FieldResolver,
-    Int,
     Mutation,
-    Query,
     Resolver,
     ResolverInterface,
-    Root
+    Root,
 } from 'type-graphql';
-import AppContext from '../../@types/AppContext';
+import { Repository } from 'typeorm';
+import { InjectRepository } from 'typeorm-typedi-extensions';
+import AppContext from '../../context';
 import Product, { Review } from '../../entity/Product';
 import { User } from '../../entity/User';
+import { ResourceResolver } from '../resource/resolvers';
 import { CreateReviewInput } from './inputs';
 
 @Resolver(Review)
-class ReviewResolver implements ResolverInterface<Review> {
+class ReviewResolver
+    extends ResourceResolver(Review)
+    implements ResolverInterface<Review>
+{
+    // Dependencies
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>;
 
-    @Query(() => Review)
-    async review(@Arg('id', () => Int) id: number): Promise<Review> {
-        return Review.findOne(id);
-    }
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>;
 
-    @Query(() => [Review])
-    async reviews(): Promise<Review[]> {
-        return Review.find();
-    }
-
+    // Queries
     @Mutation(() => Review)
     async createReview(
         @Arg('data') { rating, text, productID }: CreateReviewInput,
         @Ctx() context: AppContext
     ): Promise<Review> {
-        return Review.create({
+        const product = await this.productRepository.findOne(productID);
+        const user = await this.userRepository.findOne(
+            context.req.session.userID
+        );
+
+        const review = this.resourceRepository.create({
             rating,
             text,
-            user: await User.findOne(context.req.session.userID),
-            product: await Product.findOne(productID)
-        }).save();
+            user,
+            product,
+        });
+
+        return this.resourceRepository.save(review);
     }
 
     @FieldResolver(() => User)
     async user(@Root() parent: Review): Promise<User> {
-        const { user } = await Review.findOne(parent.id, { relations: ['user'] });
+        const { user } = await this.resourceRepository.findOne(parent.id, {
+            relations: ['user'],
+        });
         return user;
     }
-
 }
 
 export default ReviewResolver;

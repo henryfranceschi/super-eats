@@ -2,60 +2,78 @@ import {
     Arg,
     Ctx,
     FieldResolver,
-    Int,
+    ID,
     Mutation,
     Query,
     Resolver,
-    ResolverInterface,
-    Root
+    Root,
+    UseMiddleware,
 } from 'type-graphql';
-import { Like } from 'typeorm';
-import AppContext from '../../@types/AppContext';
+import { Like, Repository } from 'typeorm';
+import { InjectRepository } from 'typeorm-typedi-extensions';
+import AppContext from '../../context';
 import Product from '../../entity/Product';
 import Restaurant from '../../entity/Restaurant';
-import { User } from '../../entity/User';
+import { User, UserRole } from '../../entity/User';
+import { authorizeIfOwner, authorizeIfRoles } from '../middleware';
+import { ResourceResolver } from '../resource/resolvers';
 import { RestaurantCreateInput } from './inputs';
 
 @Resolver(Restaurant)
-class RestaurantResolver implements ResolverInterface<Restaurant> {
+class RestaurantResolver extends ResourceResolver(Restaurant) {
+    // Dependencies
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>;
 
-    @Query(() => Restaurant)
-    async restaurant(@Arg('id', () => Int) id: number): Promise<Restaurant> {
-        return await Restaurant.findOne(id);
-    }
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>;
 
+    // Queries
     @Query(() => [Restaurant])
     async restaurants(
         @Arg('nameContains', { nullable: true }) nameContains: string
     ): Promise<Restaurant[]> {
         if (nameContains) {
-            return Restaurant.find({
-                name: Like(`%${nameContains}%`)
+            return this.resourceRepository.find({
+                name: Like(`%${nameContains}%`),
             });
         } else {
-            return Restaurant.find();
+            return this.resourceRepository.find();
         }
     }
 
     @FieldResolver(() => [Product])
     async products(@Root() parent: Restaurant): Promise<Product[]> {
-        return Product.find({ where: { seller: parent }, relations: ['seller'] });
+        return this.productRepository.find({
+            where: { seller: parent },
+            relations: ['seller'],
+        });
     }
 
     @Mutation(() => Restaurant)
+    @UseMiddleware(authorizeIfRoles([UserRole.Seller]))
     async createRestaurant(
         @Arg('data') { name }: RestaurantCreateInput,
         @Ctx() context: AppContext
     ): Promise<Restaurant> {
-        const user = await User.findOne(context.req.session.userID);
-        const restaurant = Restaurant.create({
+        const user = await this.userRepository.findOne(
+            context.req.session.userID
+        );
+        const restaurant = this.resourceRepository.create({
             name,
-            user
-        })
+            user,
+        });
 
-        return restaurant.save();
+        return this.resourceRepository.save(restaurant);
     }
 
+    @Mutation(() => String)
+    @UseMiddleware(authorizeIfOwner(Restaurant, 'user'))
+    async removeRestaurant(@Arg('id', () => ID) id: string): Promise<string> {
+        const restaurant = await this.resourceRepository.findOne(id);
+
+        return restaurant.id;
+    }
 }
 
 export default RestaurantResolver;
