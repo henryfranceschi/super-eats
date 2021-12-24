@@ -8,33 +8,51 @@ import {
     Query,
     Resolver,
     ResolverInterface,
-    Root
-} from "type-graphql";
-import Product, { Review } from "../../entity/Product";
-import { CreateProductInput, ProductOrder } from "./inputs";
-import { PaginationArgs, Order } from '../inputs';
+    Root,
+} from 'type-graphql';
+import Product, { Review } from '../../entity/Product';
+import { CreateProductInput, ProductOrder } from './inputs';
+import { Order } from '../inputs';
+import { InjectRepository } from 'typeorm-typedi-extensions';
+import { Repository } from 'typeorm';
+import { PaginationArgs } from '../resource/input';
+import { ResourceResolver } from '../resource/resolvers';
+import { ResourceKey } from '../../entity/Resource';
 
 @Resolver(Product)
-class ProductResolver implements ResolverInterface<Product> {
+class ProductResolver
+    extends ResourceResolver(Product)
+    implements ResolverInterface<Product>
+{
+    // Dependencies
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>;
 
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>;
+
+    // Queries
     @Query(() => Product)
-    async product(@Arg('id', () => Int) id: number): Promise<Product | null> {
-        return Product.findOne(id);
+    async product(
+        @Arg('id', () => Int) id: ResourceKey
+    ): Promise<Product | null> {
+        return this.productRepository.findOne(id);
     }
 
     @Query(() => [Product])
     async products(
-        @Args()
-        { skip, take }: PaginationArgs,
-        @Arg('orderBy', () => ProductOrder, { nullable: true, defaultValue: ProductOrder.Rating })
+        @Args() { skip, take }: PaginationArgs,
+        @Arg('orderBy', () => ProductOrder, {
+            nullable: true,
+            defaultValue: ProductOrder.Rating,
+        })
         orderBy: ProductOrder,
         @Arg('direction', () => Order, { defaultValue: Order.Asc })
         direction: Order
-
     ): Promise<Product[]> {
-        const queryBuilder = Product
+        const queryBuilder = this.productRepository
             .createQueryBuilder('product')
-            .select('product.*')
+            .select('product.*');
 
         switch (orderBy) {
             case ProductOrder.Popularity:
@@ -43,15 +61,14 @@ class ProductResolver implements ResolverInterface<Product> {
                 break;
 
             case ProductOrder.Price:
-                queryBuilder
-                    .orderBy('price', direction)
+                queryBuilder.orderBy('price', direction);
                 break;
 
             case ProductOrder.Rating:
                 queryBuilder
                     .addSelect('AVG(review.rating)', 'avg')
                     .leftJoin('product.reviews', 'review')
-                    .orderBy('avg', direction)
+                    .orderBy('avg', direction);
                 break;
         }
 
@@ -63,14 +80,15 @@ class ProductResolver implements ResolverInterface<Product> {
             queryBuilder.skip(skip);
         }
 
-        return queryBuilder
-            .groupBy('product.id')
-            .getRawMany();
+        return queryBuilder.groupBy('product.id').getRawMany();
     }
 
     @Mutation(() => Product)
-    async createProduct(@Arg('data') data: CreateProductInput): Promise<Product> {
-        return Product.create(data).save();
+    async createProduct(
+        @Arg('data') data: CreateProductInput
+    ): Promise<Product> {
+        const product = this.productRepository.create(data);
+        return this.productRepository.save(product);
     }
 
     @Mutation(() => [Product])
@@ -78,20 +96,20 @@ class ProductResolver implements ResolverInterface<Product> {
         @Arg('data', () => [CreateProductInput])
         data: CreateProductInput[]
     ): Promise<Product[]> {
-        const promises = Product
+        const promises = this.productRepository
             .create(data)
-            .map(async product => product.save());
+            .map(async (product) => this.productRepository.save(product));
 
         return Promise.all(promises);
     }
 
     @FieldResolver(() => Float)
     async averageRating(@Root() parent: Product): Promise<number> {
-        const avg: number = await Review
-            .createQueryBuilder("review")
-            .select("AVG(review.rating)", "avg")
+        const avg: number = await this.productRepository
+            .createQueryBuilder('review')
+            .select('AVG(review.rating)', 'avg')
             .where({
-                product: parent
+                product: parent,
             })
             .getRawOne();
 
@@ -99,16 +117,13 @@ class ProductResolver implements ResolverInterface<Product> {
     }
 
     @FieldResolver(() => [Review])
-    async reviews(
-        @Root() parent: Product
-    ): Promise<Review[]> {
-        return Review.find({
+    async reviews(@Root() parent: Product): Promise<Review[]> {
+        return this.reviewRepository.find({
             where: {
-                product: parent
-            }
+                product: parent,
+            },
         });
     }
-
 }
 
 export default ProductResolver;
