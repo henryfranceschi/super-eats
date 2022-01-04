@@ -1,23 +1,29 @@
 import {
     Arg,
     Args,
+    Ctx,
     FieldResolver,
     Float,
-    Int,
+    ID,
     Mutation,
     Query,
     Resolver,
     ResolverInterface,
     Root,
+    UseMiddleware,
 } from 'type-graphql';
 import Product, { Review } from '../../entity/Product';
-import { CreateProductInput, ProductOrder } from './inputs';
+import { ProductCreateInput, ProductOrder, ProductUpdateInput } from './inputs';
 import { Order } from '../inputs';
 import { InjectRepository } from 'typeorm-typedi-extensions';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { PaginationArgs } from '../resource/input';
 import { ResourceResolver } from '../resource/resolvers';
 import { ResourceKey } from '../../entity/Resource';
+import Restaurant from '../../entity/Restaurant';
+import AppContext from '../../context';
+import { ifOwner, ifRoles } from '../middleware';
+import { UserRole } from '../../entity/User';
 
 @Resolver(Product)
 class ProductResolver
@@ -25,18 +31,15 @@ class ProductResolver
     implements ResolverInterface<Product>
 {
     // Dependencies
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>;
+    @InjectRepository(Restaurant)
+    private readonly restaurantRepository: Repository<Restaurant>;
 
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>;
 
-    // Queries
     @Query(() => Product)
-    async product(
-        @Arg('id', () => Int) id: ResourceKey
-    ): Promise<Product | null> {
-        return this.productRepository.findOne(id);
+    async product(@Arg('id', () => ID) id: ResourceKey): Promise<Product> {
+        return this.resourceRepository.findOne(id);
     }
 
     @Query(() => [Product])
@@ -50,7 +53,7 @@ class ProductResolver
         @Arg('direction', () => Order, { defaultValue: Order.Asc })
         direction: Order
     ): Promise<Product[]> {
-        const queryBuilder = this.productRepository
+        const queryBuilder = this.resourceRepository
             .createQueryBuilder('product')
             .select('product.*');
 
@@ -84,28 +87,88 @@ class ProductResolver
     }
 
     @Mutation(() => Product)
+    @UseMiddleware(ifRoles([UserRole.Seller]))
     async createProduct(
-        @Arg('data') data: CreateProductInput
+        @Ctx() context: AppContext,
+        @Arg('data') data: ProductCreateInput
     ): Promise<Product> {
-        const product = this.productRepository.create(data);
-        return this.productRepository.save(product);
+        const seller = await this.restaurantRepository.findOne({
+            where: {
+                user: {
+                    id: context.req.session.userID,
+                },
+            },
+        });
+
+        console.log(seller);
+
+        const product = this.resourceRepository.create({ ...data, seller });
+        return this.resourceRepository.save(product);
     }
 
     @Mutation(() => [Product])
+    @UseMiddleware(ifRoles([UserRole.Seller]))
     async createProducts(
-        @Arg('data', () => [CreateProductInput])
-        data: CreateProductInput[]
+        @Ctx() context: AppContext,
+        @Arg('data', () => [ProductCreateInput])
+        data: ProductCreateInput[]
     ): Promise<Product[]> {
-        const promises = this.productRepository
-            .create(data)
-            .map(async (product) => this.productRepository.save(product));
+        const seller = await this.restaurantRepository.findOne({
+            where: {
+                user: {
+                    id: context.req.session.userID,
+                },
+            },
+        });
 
-        return Promise.all(promises);
+        data.forEach((object) => Object.assign(object, { seller }));
+
+        return this.resourceRepository.save(
+            this.resourceRepository.create(data)
+        );
+    }
+
+    @Mutation(() => Boolean)
+    @UseMiddleware(ifOwner(Product, ['seller', 'user']))
+    async updateProduct(
+        @Arg('id', () => ID) id: ResourceKey,
+        @Arg('data') data: ProductUpdateInput
+    ): Promise<boolean> {
+        type DataType = ProductUpdateInput;
+        type KeyValuePair = [k: string, v: DataType[keyof DataType]];
+        const updatedValues = Object.entries(data)
+            .filter(([_, value]: KeyValuePair) => value !== undefined)
+            .reduce(
+                (obj, [key, value]: KeyValuePair) =>
+                    Object.assign(obj, { [key]: value }),
+                {}
+            );
+
+        const result: UpdateResult = await this.resourceRepository.update(id, {
+            ...updatedValues,
+        });
+        if (result.affected > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Mutation(() => ID)
+    @UseMiddleware(ifOwner(Product, ['seller', 'user']))
+    async deleteProduct(
+        @Arg('id', () => ID) id: ResourceKey
+    ): Promise<ResourceKey> {
+        const result = await this.resourceRepository.delete(id);
+
+        console.assert(result.affected > 0);
+
+        return id;
     }
 
     @FieldResolver(() => Float)
     async averageRating(@Root() parent: Product): Promise<number> {
-        const avg: number = await this.productRepository
+        const avg: number = await this.reviewRepository
             .createQueryBuilder('review')
             .select('AVG(review.rating)', 'avg')
             .where({

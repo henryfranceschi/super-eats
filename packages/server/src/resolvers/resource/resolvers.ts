@@ -25,7 +25,7 @@ function ResourceResolver<T extends Resource>(
         constructor(
             @InjectRepository(ResourceCls)
             protected readonly resourceRepository: Repository<T>
-        ) {}
+        ) { }
 
         @Query(() => ResourceCls, {
             name: options?.getOne?.name ?? resourceName,

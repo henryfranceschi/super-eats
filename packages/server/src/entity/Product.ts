@@ -1,9 +1,4 @@
-import {
-    Column,
-    Entity,
-    ManyToOne,
-    OneToMany,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './User';
 import Restaurant from './Restaurant';
 import { Field, Float, Int, ObjectType } from 'type-graphql';
@@ -32,7 +27,6 @@ enum Categories {
 @ObjectType()
 @Entity()
 class Product extends Resource {
-
     @Field()
     @Column({ length: 32 })
     name: string;
@@ -49,7 +43,7 @@ class Product extends Resource {
     @Column({
         type: 'enum',
         enum: Categories,
-        default: Categories.None
+        default: Categories.None,
     })
     category: Categories;
 
@@ -57,29 +51,31 @@ class Product extends Resource {
     @Column({
         type: 'enum',
         enum: Diets,
-        default: Diets.None
+        default: Diets.None,
     })
     diet: Diets;
 
+    @Field()
+    @Column({ default: '/image/product/default.png' })
+    imageUri: string;
+
     @Field(() => Restaurant)
-    @ManyToOne(() => Restaurant, restaurant => restaurant.products, {
-        nullable: false
+    @ManyToOne(() => Restaurant, (restaurant) => restaurant.products, {
+        nullable: false,
     })
     seller: Restaurant;
 
     @Field(() => [Review])
-    @OneToMany(() => Review, reviews => reviews.product)
+    @OneToMany(() => Review, (reviews) => reviews.product)
     reviews: Review[];
 
     @Field(() => Float)
     averageRating: number;
-
 }
 
 @ObjectType()
 @Entity()
 class Review extends Resource {
-
     @Field(() => Int)
     @Column()
     rating: number;
@@ -93,9 +89,8 @@ class Review extends Resource {
     user: User;
 
     @Field(() => Product)
-    @ManyToOne(() => Product, product => product.reviews)
+    @ManyToOne(() => Product, (product) => product.reviews)
     product: Product;
-
 }
 
 export default Product;

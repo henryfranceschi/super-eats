@@ -1,9 +1,9 @@
-import { Equals, IsEmail, Length, Matches, MaxLength } from 'class-validator';
+import { Equals, IsEmail, Length, MaxLength } from 'class-validator';
 import { Field, InputType, registerEnumType } from 'type-graphql';
 import { User, UserRole } from '../../entity/User';
 
 @InputType()
-class CreateUserInput implements Partial<User> {
+class SignUpInput implements Partial<User> {
     @Field()
     @MaxLength(254)
     @IsEmail()
@@ -13,6 +13,10 @@ class CreateUserInput implements Partial<User> {
     @Length(8, 64)
     password: string;
 
+    @Field()
+    @Equals('password', { message: "passwords must match" })
+    confirmPassword: string;
+
     @Field({ nullable: true })
     firstName?: string;
 
@@ -21,7 +25,7 @@ class CreateUserInput implements Partial<User> {
 }
 
 @InputType()
-class LoginInput implements Partial<User> {
+class SignInInput implements Partial<User> {
     @Field()
     email: string;
 
@@ -39,7 +43,7 @@ class PasswordUpdateInput {
     confirmPassword: string;
 
     @Field()
-    secret: string;
+    token: string;
 }
 
 registerEnumType(UserRole, {
@@ -47,4 +51,4 @@ registerEnumType(UserRole, {
     description: '',
 });
 
-export { CreateUserInput, LoginInput, PasswordUpdateInput };
+export { SignUpInput, SignInInput, PasswordUpdateInput };

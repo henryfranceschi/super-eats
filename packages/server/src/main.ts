@@ -14,6 +14,8 @@ import {
     UserResolver,
     ReviewResolver,
 } from './resolvers';
+import { CartRowResolver } from './resolvers/cart/resolver';
+import path from 'path';
 
 async function main() {
     useContainer(Container);
@@ -25,7 +27,7 @@ async function main() {
 
     const corsOptions = {
         credentials: true,
-        origin: ['http://localhost:3000', 'https://studio.apollographql.com'],
+        origin: ['http://supereats.test', 'https://studio.apollographql.com'],
     };
 
     const sessionOptions: SessionOptions = {
@@ -38,17 +40,20 @@ async function main() {
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            sameSite: 'none',
+            sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production',
             maxAge: 30 * 60 * 1000,
         },
     };
+
+    app.use(express.static(path.join(__dirname, '../storage')));
     app.use(cors(corsOptions));
     app.use(session(sessionOptions));
 
     const schema = await buildSchema({
         resolvers: [
             UserResolver,
+            CartRowResolver,
             RestaurantResolver,
             ProductResolver,
             ReviewResolver,
@@ -64,7 +69,16 @@ async function main() {
 
     apolloServer.applyMiddleware({ app, cors: false });
 
-    app.listen(4000, () => console.log('listening on port 4000'));
+    const server = app.listen(4000, () =>
+        console.log('listening on port 4000')
+    );
+
+    // process.on('SIGINT', () => {
+    //     console.log('Closing http server');
+    //     server.close(() => {
+    //         console.log('Server closed');
+    //     });
+    // });
 }
 
 main().catch((error) => console.error(error));

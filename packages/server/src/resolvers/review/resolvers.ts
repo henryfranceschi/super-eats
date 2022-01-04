@@ -13,7 +13,7 @@ import AppContext from '../../context';
 import Product, { Review } from '../../entity/Product';
 import { User } from '../../entity/User';
 import { ResourceResolver } from '../resource/resolvers';
-import { CreateReviewInput } from './inputs';
+import { ReviewCreateInput } from './inputs';
 
 @Resolver(Review)
 class ReviewResolver
@@ -30,7 +30,7 @@ class ReviewResolver
     // Queries
     @Mutation(() => Review)
     async createReview(
-        @Arg('data') { rating, text, productID }: CreateReviewInput,
+        @Arg('data') { rating, text, productID }: ReviewCreateInput,
         @Ctx() context: AppContext
     ): Promise<Review> {
         const product = await this.productRepository.findOne(productID);

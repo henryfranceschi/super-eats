@@ -1,3 +1,4 @@
+// Server config
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
@@ -11,5 +12,6 @@
     "typeRoots": ["@types"],
     // Emit
     "outDir": "dist",
+    "strict": false
   }
 }
