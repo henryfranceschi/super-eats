@@ -1,0 +1,38 @@
+.cart-page {
+  display: flex;
+  .cart-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    .cart-row {
+      display: flex;
+      position: relative;
+      margin: 10px;
+      &::after {
+        position: absolute;
+        content: '';
+        bottom: -10px;
+        width: 100%;
+        height: 2px;
+        background-color: lightgray;
+        // border-bottom: 2px solid gray;
+      }
+      .inner-box {
+        display: flex;
+        min-width: 250px;
+        height: 100%;
+        width: 100%;
+        padding: 8px;
+        flex-direction: row;
+        justify-content: space-between;
+        .info-box {
+          flex: 1 1 100%;
+        }
+      }
+    }
+  }
+
+  .info {
+    padding: 20px;
+  }
+}

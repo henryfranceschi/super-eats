@@ -2,12 +2,12 @@ import { registerEnumType } from 'type-graphql';
 
 enum Order {
     Asc = 'ASC',
-    Desc = 'DESC'
+    Desc = 'DESC',
 }
 
 registerEnumType(Order, {
     name: 'Order',
-    description: ''
+    description: '',
 });
 
 export { Order };

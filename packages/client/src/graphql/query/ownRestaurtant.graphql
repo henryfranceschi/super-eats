@@ -1,0 +1,16 @@
+query OwnRestaurtant {
+  ownRestaurtant {
+    id
+    name
+    description
+    products {
+      id
+      name
+      description
+      price
+      category
+      diet
+      imageUri
+    }
+  }
+}

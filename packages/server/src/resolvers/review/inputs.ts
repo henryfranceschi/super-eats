@@ -3,7 +3,7 @@ import { Review } from '../../entity/Product';
 import { ResourceKey } from '../../entity/Resource';
 
 @InputType()
-class CreateReviewInput implements Partial<Review> {
+class ReviewCreateInput implements Partial<Review> {
     @Field(() => Int)
     rating: number;
 
@@ -14,4 +14,4 @@ class CreateReviewInput implements Partial<Review> {
     productID: ResourceKey;
 }
 
-export { CreateReviewInput };
+export { ReviewCreateInput };

@@ -15,7 +15,7 @@ import AppContext from '../../context';
 import Product from '../../entity/Product';
 import Restaurant from '../../entity/Restaurant';
 import { User, UserRole } from '../../entity/User';
-import { authorizeIfOwner, authorizeIfRoles } from '../middleware';
+import { ifOwner, ifOwnerShallow, ifRoles } from '../middleware';
 import { ResourceResolver } from '../resource/resolvers';
 import { RestaurantCreateInput } from './inputs';
 
@@ -27,6 +27,16 @@ class RestaurantResolver extends ResourceResolver(Restaurant) {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>;
+
+    @Query(() => Restaurant)
+    @UseMiddleware(ifRoles([UserRole.Seller]))
+    @UseMiddleware()
+    async ownRestaurtant(@Ctx() context: AppContext): Promise<Restaurant> {
+        const userId = context.req.session.userID;
+        return this.resourceRepository.findOne({
+            where: { user: { id: userId } },
+        });
+    }
 
     // Queries
     @Query(() => [Restaurant])
@@ -51,7 +61,7 @@ class RestaurantResolver extends ResourceResolver(Restaurant) {
     }
 
     @Mutation(() => Restaurant)
-    @UseMiddleware(authorizeIfRoles([UserRole.Seller]))
+    // @UseMiddleware(ifRoles([UserRole.Seller]))
     async createRestaurant(
         @Arg('data') { name }: RestaurantCreateInput,
         @Ctx() context: AppContext
@@ -59,16 +69,23 @@ class RestaurantResolver extends ResourceResolver(Restaurant) {
         const user = await this.userRepository.findOne(
             context.req.session.userID
         );
-        const restaurant = this.resourceRepository.create({
-            name,
-            user,
-        });
+        const count = await this.resourceRepository.count({ where: { user } });
+        if (count === 0) {
+            user.role = UserRole.Seller;
+            const restaurant = this.resourceRepository.create({
+                name,
+                user,
+            });
 
-        return this.resourceRepository.save(restaurant);
+            this.userRepository.save(user);
+            return this.resourceRepository.save(restaurant);
+        } else {
+            throw new Error('Cannot create more than one restaurant per user.');
+        }
     }
 
     @Mutation(() => String)
-    @UseMiddleware(authorizeIfOwner(Restaurant, 'user'))
+    @UseMiddleware(ifOwnerShallow(Restaurant, 'user'))
     async removeRestaurant(@Arg('id', () => ID) id: string): Promise<string> {
         const restaurant = await this.resourceRepository.findOne(id);
 

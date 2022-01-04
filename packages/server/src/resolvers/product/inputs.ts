@@ -4,19 +4,19 @@ import {
     Field,
     Float,
     InputType,
-    Int,
     registerEnumType,
 } from 'type-graphql';
 import Product, { Categories, Diets } from '../../entity/Product';
 
 enum ProductOrder {
-    Popularity,
-    Rating,
-    Price,
+    Popularity = 'popularity',
+    Rating = 'rating',
+    Price = 'price',
 }
 
 @InputType()
-class CreateProductInput implements Partial<Product> {
+class ProductCreateInput implements Partial<Product> {
+
     @Field()
     @Length(2, 32)
     name: string;
@@ -34,7 +34,45 @@ class CreateProductInput implements Partial<Product> {
 
     @Field(() => Diets, { nullable: true })
     diet?: Diets;
+
+    @Field({ nullable: true })
+    image?: string;
+
 }
+@InputType()
+class ProductUpdateInput implements Partial<Product> {
+
+    @Field({ nullable: true })
+    @Length(2, 32)
+    name?: string;
+
+    @Field({ nullable: true })
+    @MaxLength(64)
+    description?: string;
+
+    @Field(() => Float, { nullable: true })
+    @IsPositive()
+    price?: number;
+
+    @Field(() => Categories, { nullable: true })
+    category?: Categories;
+
+    @Field(() => Diets, { nullable: true })
+    diet?: Diets;
+
+    @Field({ nullable: true })
+    image?: string;
+
+}
+
+// const PartialProduct = PartialType(ProductCreateInput);
+// export type ProductUpdateInput = typeof PartialProduct;
+
+
+// @InputType()
+// class ProductUpdateInput implements Omit<Product, 'id' | 'imageUri' | 'seller' | 'reviews' | 'averageRating'> {
+
+// }
 
 @ArgsType()
 class ProductsArgs {
@@ -66,4 +104,4 @@ registerEnumType(ProductOrder, {
     description: '',
 });
 
-export { CreateProductInput, ProductsArgs, ProductOrder };
+export { ProductCreateInput, ProductUpdateInput, ProductsArgs, ProductOrder };
