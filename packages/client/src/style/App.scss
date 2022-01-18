@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600&display=swap');
+@import 'pages/cart';
+@import 'pages/home';
+@import 'pages/products';
+@import 'pages/merchant';
+@import 'form';
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  // font-family: 'Fira Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.shop {
+  header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: $primary-color;
+    color: white;
+    height: $header-height;
+    box-shadow: 0 2px 14px #00000070;
+    > .content-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      height: $header-height;
+    }
+    nav {
+      background-color: inherit;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+      padding: 10px;
+    }
+
+    button {
+      font-size: 24px;
+      font-weight: 500;
+      padding: 8px;
+      color: white;
+      //   border: solid 2px;
+      //   border-radius: 2px;
+      background-color: unset;
+    }
+  }
+  .page {
+    margin-top: $header-height;
+    min-height: calc(100vh - $header-height - $footer-height);
+  }
+  footer {
+    background-color: $primary-color;
+    height: $footer-height;
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: rgba(0, 0, 0, 0.75);
+  transition: all 0.5s;
+  z-index: 2000;
+
+  &.hidden {
+    background: transparent;
+    visibility: hidden;
+    pointer-events: none;
+    > .sidebar {
+      transform: translateX(-100%);
+    }
+  }
+
+  > :first-child {
+    transition: inherit;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 300px;
+    height: 100vh;
+    padding: 20px;
+    background-color: white;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Buttons that contain icons
+button {
+  svg + * {
+    margin-left: 10px;
+  }
+
+  * + svg {
+    margin-right: 10px;
+  }
+}
+
+.logo {
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+}
+
+.full-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.dark {
+  background: #333333;
+  color: white;
+}
+
+.btn-light {
+  background: #35f;
+  color: white;
+}
+
+.btn-light:hover {
+  opacity: 0.8;
+}
+
+button {
+  font-weight: bold;
+  font-size: 18px;
+  padding: 0.75em;
+  border: none;
+  border-radius: 4px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+}
+
+.box {
+  border: 1px solid #bebebe;
+  border-radius: 2px;
+  margin: 5px;
+}
+
+.card {
+  background-color: white;
+  box-shadow: 2px 2px 6px #00000070;
+  margin: 5px;
+}

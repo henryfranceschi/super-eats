@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { Field, ID, ObjectType, registerEnumType } from 'type-graphql'
+import { Column, Entity } from 'typeorm';
+import { Field, ObjectType } from 'type-graphql';
+import { Resource } from './Resource';
 
 enum UserRole {
     User = 'user',
@@ -7,18 +8,9 @@ enum UserRole {
     Admin = 'admin',
 }
 
-registerEnumType(UserRole, {
-    name: 'UserRole',
-    description: ''
-})
-
 @ObjectType()
 @Entity()
-class User extends BaseEntity {
-
-    @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
+class User extends Resource {
 
     @Field()
     @Column({ length: 254, unique: true })

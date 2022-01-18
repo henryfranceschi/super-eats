@@ -1,0 +1,17 @@
+.merchant {
+  display: flex;
+  min-height: 100vh;
+  nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 20px;
+  }
+  table {
+    flex: 1 1 auto;
+    height: max-content;
+    tr {
+      border: solid black 20x;
+    }
+  }
+}
