@@ -1,0 +1,5 @@
+mutation CreateRestaurant($data: RestaurantCreateInput!) {
+  createRestaurant(data: $data) {
+    id
+  }
+}

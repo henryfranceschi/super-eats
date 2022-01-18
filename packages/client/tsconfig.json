@@ -1,3 +1,4 @@
+// Client config
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {

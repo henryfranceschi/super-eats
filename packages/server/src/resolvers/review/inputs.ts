@@ -1,9 +1,9 @@
 import { Field, InputType, Int } from 'type-graphql';
 import { Review } from '../../entity/Product';
+import { ResourceKey } from '../../entity/Resource';
 
 @InputType()
-class CreateReviewInput implements Partial<Review> {
-
+class ReviewCreateInput implements Partial<Review> {
     @Field(() => Int)
     rating: number;
 
@@ -11,8 +11,7 @@ class CreateReviewInput implements Partial<Review> {
     text: string;
 
     @Field(() => Int)
-    productID: number;
-
+    productID: ResourceKey;
 }
 
-export { CreateReviewInput }
+export { ReviewCreateInput };

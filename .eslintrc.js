@@ -1,16 +1,13 @@
-/* eslint-disable no-undef */
 module.exports = {
-    parser: "@typescript-eslint/parser",
+    env: {
+        node: true,
+    },
+    parser: '@typescript-eslint/parser',
     parserOptions: {
-        project: "./tsconfig.json"
+        project: './tsconfig.json',
     },
     extends: [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking"
-    ],
-    ignorePatterns: [
-        '.eslintrc.js',
-        'dist'
+        'eslint:recommended',
+        'plugin:@typescript-eslint/recommended',
     ]
 };

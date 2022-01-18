@@ -1,0 +1,12 @@
+query CartItems {
+  cart {
+    id
+    quantity
+    product {
+      id
+      name
+      imageUri
+      price
+    }
+  }
+}

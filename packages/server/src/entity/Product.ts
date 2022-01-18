@@ -1,7 +1,8 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './User';
 import Restaurant from './Restaurant';
-import { Field, Float, ID, Int, ObjectType, registerEnumType } from 'type-graphql';
+import { Field, Float, Int, ObjectType } from 'type-graphql';
+import { Resource } from './Resource';
 
 enum Diets {
     None,
@@ -9,11 +10,6 @@ enum Diets {
     Vegan,
     Halal,
 }
-
-registerEnumType(Diets, {
-    name: 'Diets',
-    description: ''
-})
 
 enum Categories {
     None,
@@ -28,19 +24,9 @@ enum Categories {
     Vietnamese,
 }
 
-registerEnumType(Categories, {
-    name: 'Categories',
-    description: ''
-})
-
 @ObjectType()
 @Entity()
-class Product extends BaseEntity {
-
-    @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
-
+class Product extends Resource {
     @Field()
     @Column({ length: 32 })
     name: string;
@@ -57,7 +43,7 @@ class Product extends BaseEntity {
     @Column({
         type: 'enum',
         enum: Categories,
-        default: Categories.None
+        default: Categories.None,
     })
     category: Categories;
 
@@ -65,31 +51,31 @@ class Product extends BaseEntity {
     @Column({
         type: 'enum',
         enum: Diets,
-        default: Diets.None
+        default: Diets.None,
     })
     diet: Diets;
 
+    @Field()
+    @Column({ default: '/image/product/default.png' })
+    imageUri: string;
+
     @Field(() => Restaurant)
-    @ManyToOne(() => Restaurant, restaurant => restaurant.products)
+    @ManyToOne(() => Restaurant, (restaurant) => restaurant.products, {
+        nullable: false,
+    })
     seller: Restaurant;
 
     @Field(() => [Review])
-    @OneToMany(() => Review, reviews => reviews.product)
+    @OneToMany(() => Review, (reviews) => reviews.product)
     reviews: Review[];
 
     @Field(() => Float)
     averageRating: number;
-
 }
 
 @ObjectType()
 @Entity()
-class Review extends BaseEntity {
-
-    @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
-
+class Review extends Resource {
     @Field(() => Int)
     @Column()
     rating: number;
@@ -103,9 +89,8 @@ class Review extends BaseEntity {
     user: User;
 
     @Field(() => Product)
-    @ManyToOne(() => Product, product => product.reviews)
+    @ManyToOne(() => Product, (product) => product.reviews)
     product: Product;
-
 }
 
 export default Product;
